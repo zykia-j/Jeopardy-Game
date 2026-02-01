@@ -1,0 +1,336 @@
+/* CSS Variables for Easy Theming */
+:root {
+  /* Colors */
+  --color-primary: #060ce9;
+  --color-primary-light: #115ff4;
+  --color-primary-dark: #001f5c;
+  --color-accent: #ffd700;
+  --color-accent-light: #ffeb6a;
+  --color-success: #28a200;
+  --color-text-light: #ffffff;
+  --color-text-muted: #555555;
+  --color-background-dark: #000428;
+  --color-clue-viewed: #222222;
+  --color-error: #ff4444;
+  
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.8rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  /* Typography */
+  --font-family-main: "Trebuchet MS", Arial, sans-serif;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.2rem;
+  --font-size-xl: 1.5rem;
+  --font-size-xxl: 2.5rem;
+  
+  /* Effects */
+  --border-radius: 8px;
+  --transition-speed: 0.3s;
+  --shadow-default: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-large: 0 0 15px #000;
+}
+
+/* Base Styles */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family-main);
+  background: radial-gradient(circle at top, var(--color-primary-dark), var(--color-background-dark));
+  color: var(--color-text-light);
+  text-align: center;
+  padding: var(--spacing-md);
+  min-height: 100vh;
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--font-size-xxl);
+  letter-spacing: 2px;
+  color: var(--color-accent);
+  text-shadow: 2px 2px 5px black;
+  margin-bottom: var(--spacing-md);
+  animation: fadeInDown 0.5s ease-out;
+}
+
+
+table {
+  margin: var(--spacing-md) auto;
+  border-collapse: collapse;
+  background-color: var(--color-primary);
+  box-shadow: var(--shadow-large);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  width: 100%;
+  max-width: 1200px;
+}
+
+th {
+  padding: 15px;
+  background-color: var(--color-primary-light);
+  font-size: var(--font-size-lg);
+  text-transform: uppercase;
+  border: 2px solid #000;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+td {
+  width: 150px;
+  height: 90px;
+  border: 2px solid #000;
+  font-size: var(--font-size-xl);
+  color: var(--color-accent);
+  font-weight: bold;
+  text-shadow: 1px 1px 2px black;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  vertical-align: middle;
+  position: relative;
+}
+
+td.clue:hover {
+  background-color: var(--color-success);
+  color: var(--color-text-light);
+  transform: scale(1.05);
+  z-index: 1;
+}
+
+td.clue:active {
+  transform: scale(0.98);
+}
+
+td.empty {
+  cursor: default;
+  opacity: 0.5;
+}
+
+td.empty:hover {
+  background-color: transparent;
+  transform: none;
+}
+
+td.viewed {
+  background-color: var(--color-clue-viewed);
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+  cursor: default;
+  opacity: 0.6;
+}
+
+td.viewed:hover {
+  background-color: var(--color-clue-viewed);
+  transform: none;
+}
+
+/* Active Clue Display */
+#active-clue {
+  margin-top: var(--spacing-lg);
+  background-color: var(--color-primary-light);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: var(--font-size-lg);
+  min-height: 100px;
+  box-shadow: inset 0 0 10px #000;
+  line-height: 1.6;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#active-clue:not(:empty):hover {
+  background-color: #1a6fff;
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 15px #000, 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+#active-clue .error {
+  color: var(--color-error);
+  font-weight: bold;
+}
+
+/*Loading Spinner */
+#spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  color: var(--color-accent);
+  z-index: 10;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+#spinner.disabled {
+  display: none;
+}
+
+/* ==========================================
+   Play Button
+   ========================================== */
+#play {
+  background-color: var(--color-accent);
+  color: var(--color-primary-dark);
+  border: none;
+  padding: var(--spacing-sm) 1.8rem;
+  border-radius: var(--border-radius);
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: transform 0.2s ease, background-color var(--transition-speed);
+  box-shadow: var(--shadow-default);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#play:hover {
+  background-color: var(--color-accent-light);
+  transform: scale(1.05);
+}
+
+#play:active {
+  transform: scale(0.98);
+}
+
+#play:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   Animations
+   ========================================== */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ==========================================
+   Responsive Design
+   ========================================== */
+@media (max-width: 1200px) {
+  table {
+    font-size: 0.9rem;
+  }
+  
+  td {
+    width: 120px;
+    height: 80px;
+    font-size: 1.3rem;
+  }
+  
+  th {
+    padding: 12px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+  
+  table {
+    font-size: 0.8rem;
+  }
+  
+  td {
+    width: 80px;
+    height: 60px;
+    font-size: 1rem;
+  }
+  
+  th {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+  
+  #active-clue {
+    font-size: 1rem;
+    width: 95%;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 0.5rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  td {
+    width: 60px;
+    height: 50px;
+    font-size: 0.8rem;
+    padding: 2px;
+  }
+  
+  th {
+    font-size: 0.7rem;
+    padding: 6px 4px;
+  }
+  
+  #play {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+/* ==========================================
+   Accessibility
+   ========================================== */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles for keyboard navigation */
+button:focus,
+td:focus {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  td {
+    border: 3px solid #fff;
+  }
+  
+  th {
+    border: 3px solid #fff;
+  }
+}
