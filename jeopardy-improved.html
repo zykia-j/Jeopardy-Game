@@ -16,9 +16,14 @@
   <body>
     <header>
       <h1>Jeopardy!</h1>
-      <button id="play" type="button" aria-label="Start or restart the game">
-        Start the Game!
-      </button>
+      <div class="header-controls">
+        <button id="play" type="button" aria-label="Start or restart the game">
+          Start the Game!
+        </button>
+        <div id="score" aria-live="polite" aria-label="Current score">
+          Score: $<span id="score-value" class="score-zero">0</span>
+        </div>
+      </div>
     </header>
 
     <main>

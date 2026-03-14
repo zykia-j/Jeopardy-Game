@@ -34,6 +34,17 @@
   --shadow-large: 0 0 15px #000;
 }
 
+/* Score Colors */
+:root {
+  --color-score-positive: #4cff91;
+  --color-score-negative: #ff6b6b;
+  --color-score-zero: var(--color-accent);
+  --color-btn-correct: #28a200;
+  --color-btn-correct-hover: #34cc00;
+  --color-btn-incorrect: #cc2200;
+  --color-btn-incorrect-hover: #ff2a00;
+}
+
 /* Base Styles */
 
 * {
@@ -129,6 +140,39 @@ td.viewed:hover {
   transform: none;
 }
 
+/* Header Controls */
+header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Score Display */
+#score {
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  color: var(--color-text-light);
+  letter-spacing: 1px;
+}
+
+#score-value {
+  font-size: var(--font-size-xl);
+  transition: color var(--transition-speed) ease;
+}
+
+#score-value.score-positive { color: var(--color-score-positive); }
+#score-value.score-negative { color: var(--color-score-negative); }
+#score-value.score-zero     { color: var(--color-score-zero); }
+
 /* Active Clue Display */
 #active-clue {
   margin-top: var(--spacing-lg);
@@ -159,6 +203,90 @@ td.viewed:hover {
 #active-clue .error {
   color: var(--color-error);
   font-weight: bold;
+}
+
+/* Answer Display with Scoring */
+.answer-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.answer-label {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.answer-text {
+  font-size: var(--font-size-xl);
+  font-weight: bold;
+  margin: 0;
+}
+
+.score-buttons {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--spacing-sm);
+}
+
+.score-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: none;
+  border-radius: var(--border-radius);
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color var(--transition-speed);
+  letter-spacing: 0.5px;
+}
+
+.score-btn:hover {
+  transform: scale(1.05);
+}
+
+.score-btn:active {
+  transform: scale(0.97);
+}
+
+.correct-btn {
+  background-color: var(--color-btn-correct);
+  color: var(--color-text-light);
+}
+
+.correct-btn:hover {
+  background-color: var(--color-btn-correct-hover);
+}
+
+.incorrect-btn {
+  background-color: var(--color-btn-incorrect);
+  color: var(--color-text-light);
+}
+
+.incorrect-btn:hover {
+  background-color: var(--color-btn-incorrect-hover);
+}
+
+/* Game Complete Message */
+.game-complete {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.game-complete p {
+  margin: 0;
+  font-weight: bold;
+}
+
+.game-complete p:first-child {
+  font-size: var(--font-size-xl);
 }
 
 /*Loading Spinner */

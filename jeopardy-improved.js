@@ -15,6 +15,7 @@ class GameState {
     this.activeClueMode = 0; // 0: selecting, 1: showing question, 2: showing answer
     this.isPlayButtonClickable = true;
     this.totalCluesRemaining = 0;
+    this.score = 0;
   }
 
   reset() {
@@ -22,18 +23,28 @@ class GameState {
     this.activeClue = null;
     this.activeClueMode = 0;
     this.totalCluesRemaining = CONFIG.NUMBER_OF_CATEGORIES * CONFIG.NUMBER_OF_CLUES_PER_CATEGORY;
+    this.score = 0;
+    UIController.updateScoreDisplay(0);
   }
 
   removeClue(categoryId, clueId) {
-    const category = this.categories.find(c => c.id == categoryId);
+    const catId = parseInt(categoryId, 10);
+    const cId = parseInt(clueId, 10);
+
+    const category = this.categories.find(c => c.id === catId);
     if (!category) return;
 
-    category.clues = category.clues.filter(cl => cl.id != clueId);
+    category.clues = category.clues.filter(cl => cl.id !== cId);
     this.totalCluesRemaining--;
 
     if (category.clues.length === 0) {
-      this.categories = this.categories.filter(c => c.id != categoryId);
+      this.categories = this.categories.filter(c => c.id !== catId);
     }
+  }
+
+  updateScore(delta) {
+    this.score += delta;
+    UIController.updateScoreDisplay(this.score);
   }
 
   isGameOver() {
@@ -73,14 +84,50 @@ class UIController {
 
   static showError(message) {
     this.clearActiveClue();
-    this.showActiveClue(`<div class="error">${message}</div>`);
+    this.showActiveClue(`<div class="error">${this.escapeHtml(message)}</div>`);
     this.updatePlayButton("Try Again");
+  }
+
+  static updateScoreDisplay(score) {
+    const $value = $("#score-value");
+    $value.text(score.toLocaleString());
+    $value.removeClass("score-positive score-negative score-zero");
+    if (score > 0) $value.addClass("score-positive");
+    else if (score < 0) $value.addClass("score-negative");
+    else $value.addClass("score-zero");
+  }
+
+  static showAnswerWithScoring(answer, clueValue) {
+    const escapedAnswer = this.escapeHtml(answer);
+    this.showActiveClue(`
+      <div class="answer-display">
+        <p class="answer-label">Answer:</p>
+        <p class="answer-text">${escapedAnswer}</p>
+        <div class="score-buttons">
+          <button class="score-btn correct-btn" aria-label="I got it right, add $${clueValue}">
+            ✓ Got it (+$${clueValue})
+          </button>
+          <button class="score-btn incorrect-btn" aria-label="I got it wrong, subtract $${clueValue}">
+            ✗ Missed it (−$${clueValue})
+          </button>
+        </div>
+      </div>
+    `);
+
+    $(".correct-btn").on("click", (e) => {
+      e.stopPropagation();
+      handleScoreButton(true);
+    });
+    $(".incorrect-btn").on("click", (e) => {
+      e.stopPropagation();
+      handleScoreButton(false);
+    });
   }
 
   static buildCategoryHeaders(categories) {
     const $catRow = $("#categories");
     $catRow.empty();
-    
+
     categories.forEach(category => {
       $catRow.append(`<th>${this.escapeHtml(category.title)}</th>`);
     });
@@ -92,7 +139,7 @@ class UIController {
 
     for (let i = 0; i < CONFIG.NUMBER_OF_CLUES_PER_CATEGORY; i++) {
       const $row = $("<tr>");
-      
+
       categories.forEach(cat => {
         const clue = cat.clues[i];
         if (clue) {
@@ -105,7 +152,7 @@ class UIController {
           $row.append("<td class='empty'>—</td>");
         }
       });
-      
+
       $tbody.append($row);
     }
 
@@ -127,7 +174,7 @@ class JeopardyAPI {
       const response = await axios.get(
         `${CONFIG.API_URL}categories?count=${CONFIG.CATEGORY_FETCH_COUNT}`
       );
-      
+
       const validCategories = response.data.filter(
         c => c.clues_count >= CONFIG.MIN_CLUES_PER_CATEGORY
       );
@@ -147,7 +194,7 @@ class JeopardyAPI {
   static async getCategoryData(categoryId) {
     try {
       const response = await axios.get(`${CONFIG.API_URL}category?id=${categoryId}`);
-      
+
       const validClues = response.data.clues
         .filter(c => c.question && c.answer)
         .slice(0, CONFIG.NUMBER_OF_CLUES_PER_CATEGORY);
@@ -181,20 +228,20 @@ class GameController {
       UIController.clearActiveClue();
       UIController.clearTable();
       UIController.updatePlayButton("Loading...", false);
-      
+
       gameState.reset();
 
       const categoryIds = await JeopardyAPI.getCategoryIds();
-      
+
       const categoryPromises = categoryIds.map(id => JeopardyAPI.getCategoryData(id));
       gameState.categories = await Promise.all(categoryPromises);
 
       UIController.buildCategoryHeaders(gameState.categories);
       UIController.buildClueRows(gameState.categories);
-      
+
       UIController.hideSpinner();
       UIController.updatePlayButton("Restart Game", true);
-      
+
     } catch (error) {
       console.error('Game setup error:', error);
       UIController.hideSpinner();
@@ -205,8 +252,11 @@ class GameController {
   static handleClueClick(categoryId, clueId) {
     if (gameState.activeClueMode !== 0) return;
 
-    const category = gameState.categories.find(c => c.id == categoryId);
-    const clue = category?.clues.find(cl => cl.id == clueId);
+    const catId = parseInt(categoryId, 10);
+    const cId = parseInt(clueId, 10);
+
+    const category = gameState.categories.find(c => c.id === catId);
+    const clue = category?.clues.find(cl => cl.id === cId);
 
     if (!clue) {
       console.error('Clue not found');
@@ -218,27 +268,20 @@ class GameController {
 
     // Mark clue as viewed
     $(`[data-category-id="${categoryId}"][data-clue-id="${clueId}"]`).addClass("viewed");
-    
+
     UIController.showActiveClue(UIController.escapeHtml(clue.question));
     gameState.removeClue(categoryId, clueId);
   }
 
   static handleActiveClueClick() {
     if (gameState.activeClueMode === 1) {
-      // Show answer
       gameState.activeClueMode = 2;
-      UIController.showActiveClue(UIController.escapeHtml(gameState.activeClue.answer));
-      
-    } else if (gameState.activeClueMode === 2) {
-      // Clear and check if game is over
-      gameState.activeClueMode = 0;
-      UIController.clearActiveClue();
-
-      if (gameState.isGameOver()) {
-        UIController.showActiveClue("🎉 Game Complete! 🎉");
-        UIController.updatePlayButton("Start New Game", true);
-      }
+      UIController.showAnswerWithScoring(
+        gameState.activeClue.answer,
+        gameState.activeClue.value
+      );
     }
+    // Mode 2 transitions are handled by the score buttons
   }
 }
 
@@ -258,8 +301,29 @@ function handleClickOfActiveClue() {
   GameController.handleActiveClueClick();
 }
 
+function handleScoreButton(correct) {
+  const clueValue = gameState.activeClue.value;
+  gameState.updateScore(correct ? clueValue : -clueValue);
+
+  gameState.activeClueMode = 0;
+  UIController.clearActiveClue();
+
+  if (gameState.isGameOver()) {
+    const finalScore = gameState.score;
+    const scoreClass = finalScore >= 0 ? "score-positive" : "score-negative";
+    UIController.showActiveClue(`
+      <div class="game-complete">
+        <p>Game Complete!</p>
+        <p>Final Score: <span class="${scoreClass}">$${finalScore.toLocaleString()}</span></p>
+      </div>
+    `);
+    UIController.updatePlayButton("Start New Game", true);
+  }
+}
+
 // Initialize event listeners
 $(document).ready(() => {
   $("#play").on("click", handleClickOfPlay);
   $("#active-clue").on("click", handleClickOfActiveClue);
+  UIController.updateScoreDisplay(0);
 });
