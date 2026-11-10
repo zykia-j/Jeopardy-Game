@@ -144,7 +144,9 @@ class UIController {
         const clue = cat.clues[i];
         if (clue) {
           $row.append(
-            `<td class="clue" data-category-id="${cat.id}" data-clue-id="${clue.id}">
+            `<td class="clue" data-category-id="${cat.id}" data-clue-id="${clue.id}"
+                 tabindex="0" role="button"
+                 aria-label="${this.escapeHtml(cat.title)} for $${clue.value}">
               $${clue.value}
             </td>`
           );
@@ -156,8 +158,14 @@ class UIController {
       $tbody.append($row);
     }
 
-    // Attach event listeners
+    // Attach event listeners (mouse + keyboard)
     $(".clue").on("click", handleClickOfClue);
+    $(".clue").on("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleClickOfClue(event);
+      }
+    });
   }
 
   static escapeHtml(text) {
@@ -267,7 +275,12 @@ class GameController {
     gameState.activeClueMode = 1;
 
     // Mark clue as viewed
-    $(`[data-category-id="${categoryId}"][data-clue-id="${clueId}"]`).addClass("viewed");
+    $(`[data-category-id="${categoryId}"][data-clue-id="${clueId}"]`)
+      .addClass("viewed")
+      .attr({ tabindex: "-1", "aria-disabled": "true" });
+
+    // Move focus to the clue so keyboard users can reveal the answer next
+    $("#active-clue").trigger("focus");
 
     UIController.showActiveClue(UIController.escapeHtml(clue.question));
     gameState.removeClue(categoryId, clueId);
@@ -318,6 +331,10 @@ function handleScoreButton(correct) {
       </div>
     `);
     UIController.updatePlayButton("Start New Game", true);
+    $("#play").trigger("focus");
+  } else {
+    // Return keyboard focus to the board after answering
+    $(".clue:not(.viewed)").first().trigger("focus");
   }
 }
 
@@ -325,5 +342,13 @@ function handleScoreButton(correct) {
 $(document).ready(() => {
   $("#play").on("click", handleClickOfPlay);
   $("#active-clue").on("click", handleClickOfActiveClue);
+  $("#active-clue").on("keydown", (event) => {
+    // Only react to keys pressed on the clue area itself, not the score buttons inside it
+    if (event.target !== event.currentTarget) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleClickOfActiveClue();
+    }
+  });
   UIController.updateScoreDisplay(0);
 });
